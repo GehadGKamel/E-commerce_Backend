@@ -3,6 +3,8 @@ const dotenv = require('dotenv');
 const morgan = require('morgan');
 
 dotenv.config({ path: 'config.env' });
+const ApiError = require('./utils/apiError');
+const globalError = require('./middlewares/errorMiddleware');
 const dbConnection = require('./config/database');
 const categoryRoute = require('./routes/categoryRoute');
 
@@ -23,7 +25,23 @@ if (process.env.NODE_ENV == 'development') {
 //Mount Routes
 app.use('/api/v1/categories',categoryRoute);
 
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
+app.all('*', (req, res, next) =>{
+next(new ApiError(`Can't find this route:${req.originalUrl}`,400));
+})
+
+//Global error handling middleware for express
+app.use(globalError);
+
+const PORT = process.env.PORT || 8000;
+const server = app.listen(PORT, () => {
    console.log(`App running on port ${PORT}`);
-}) 
+}) ;
+
+// Handle rejections outside express
+process.on('unhandledRejection', (err) => {
+   console.error(`unhandledRejection Errors: ${err.name} | ${err.message}`);
+   server.close(() => {
+      console.error('Server closed');
+      process.exit(1);
+   });    
+});
