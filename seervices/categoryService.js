@@ -25,13 +25,13 @@ exports.getCategory = asyncHamdler(async (req, res, next) => {
        return next(new ApiError(`Category for this id ${id} not found`, 404));
     }
     res.status(200).json({ data: category });
-})
+});
 
 //@desc creat category
 //@route POST /api/v1/categories
 //@access Private
 exports.createCategory = asyncHamdler(async (req, res) => {
-    const name = req.body.name;
+    const {name} = req.body;
     const category = await Category.create({ name, slug: slugify(name) });
     res.status(201).json({ data: category });
 
@@ -60,7 +60,7 @@ exports.deleteCategory = asyncHamdler(async (req, res ,next) => {
         return next(new ApiError(`Category for this id ${id} not found`, 404));
     }
     res.status(200).send(category);
-})
+});
 
 
 
