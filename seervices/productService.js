@@ -12,7 +12,10 @@ exports.getProducts = asyncHamdler(async (req, res) => {
   const limit = req.query.limit * 1 || 0;
   const skip = (page - 1) * limit;
 
-  const products = await Product.find({}).skip(skip).limit(limit);
+  const products = await Product.find({})
+    .skip(skip)
+    .limit(limit)
+    .populate({ path: "category", select: "name" });
   res.status(200).json({ result: products.length, page, data: products });
 });
 
@@ -21,7 +24,10 @@ exports.getProducts = asyncHamdler(async (req, res) => {
 //@access Public
 exports.getProduct = asyncHamdler(async (req, res, next) => {
   const { id } = req.params;
-  const product = await Product.findById(id);
+  const product = await Product.findById(id).populate({
+    path: "category",
+    select: "name",
+  });
   if (!product) {
     return next(new ApiError(`product for this id ${id} not found`, 404));
   }
@@ -42,7 +48,9 @@ exports.createProduct = asyncHamdler(async (req, res) => {
 //@access Private
 exports.updateProduct = asyncHamdler(async (req, res, next) => {
   const { id } = req.params;
-  req.body.slug = slugify(req.body.title);
+  if (req.body.title) {
+    req.body.slug = slugify(req.body.title);
+  }
   const product = await Product.findByIdAndUpdate({ _id: id }, req.body, {
     new: true,
   });
