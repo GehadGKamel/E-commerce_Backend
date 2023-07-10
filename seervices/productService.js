@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const asyncHamdler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const factory = require("./handlersFactory");
 
 const Product = require("../models/productModel");
 
@@ -71,11 +72,4 @@ exports.updateProduct = asyncHamdler(async (req, res, next) => {
 ////@desc delete specific product
 //@route DELETE /api/v1/products/:id
 //@access Private
-exports.deleteProduct = asyncHamdler(async (req, res, next) => {
-  const { id } = req.params;
-  const product = await Product.findByIdAndDelete(id);
-  if (!product) {
-    return next(new ApiError(`Product for this id ${id} not found`, 404));
-  }
-  res.status(200).send(product);
-});
+exports.deleteProduct = factory.deleteOne(Product);

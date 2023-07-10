@@ -2,6 +2,7 @@ const slugify = require("slugify");
 const asyncHamdler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
 const ApiFeatures = require("../utils/apiFeatures");
+const factory = require("./handlersFactory");
 const Brand = require("../models/brandModel");
 
 //@desc get all Brands
@@ -66,11 +67,5 @@ exports.updateBrand = asyncHamdler(async (req, res, next) => {
 ////@desc delete specific brand
 //@route DELETE /api/v1/brands/:id
 //@access Private
-exports.deleteBrand = asyncHamdler(async (req, res, next) => {
-  const { id } = req.params;
-  const brand = await Brand.findByIdAndDelete(id);
-  if (!brand) {
-    return next(new ApiError(`brand for this id ${id} not found`, 404));
-  }
-  res.status(200).send(brand);
-});
+exports.deleteBrand = factory.deleteOne(Brand);
+
