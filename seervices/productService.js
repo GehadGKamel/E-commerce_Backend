@@ -1,6 +1,7 @@
 const slugify = require("slugify");
 const asyncHamdler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
+const ApiFeatures = require("../utils/apiFeatures");
 
 const Product = require("../models/productModel");
 
@@ -8,47 +9,22 @@ const Product = require("../models/productModel");
 //@route GET /api/v1/products
 //@access Public
 exports.getProducts = asyncHamdler(async (req, res) => {
-  //1) filtering
-  // eslint-disable-next-line node/no-unsupported-features/es-syntax
-  const queryStringObj = { ...req.query };
-  const excludesFields = ["page", "sort", "limit", "fields"];
-  excludesFields.forEach((field) => delete queryStringObj[field]);
-
-  //apply filteration using [gte, gt, lte, lt]
-  let queryStr = JSON.stringify(queryStringObj);
-  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-
-  //2) pagination
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 50;
-  const skip = (page - 1) * limit;
-
   //build query
-  let mongooseQuery = Product.find(JSON.parse(queryStr))
-    .skip(skip)
-    .limit(limit)
-    .populate({ path: "category", select: "name" });
-
-  //3) sorting
-  if (req.query.sort) {
-    const sortBy = req.query.sort.split(",").join(" ");
-    mongooseQuery = mongooseQuery.sort(sortBy);
-  } else {
-    mongooseQuery = mongooseQuery.sort("-createdAt");
-  }
-
-  //4) fields limiting
-  if (req.query.fields) {
-    const fields = req.query.fields.split(",").join(" ");
-    mongooseQuery = mongooseQuery.select(fields);
-  } else {
-    mongooseQuery = mongooseQuery.select("-__v");
-  }
+  const documentsCounts = await Product.countDocuments();
+  const apiFeatures = new ApiFeatures(Product.find(), req.query)
+    .paginate(documentsCounts)
+    .filter()
+    .search()
+    .sort()
+    .limitFields();
 
   // execute query
+  const { mongooseQuery, paginationResult } = apiFeatures;
   const products = await mongooseQuery;
 
-  res.status(200).json({ result: products.length, page, data: products });
+  res
+    .status(200)
+    .json({ result: products.length, paginationResult, data: products });
 });
 
 //@desc get specific product by id
