@@ -8,14 +8,30 @@ const Product = require("../models/productModel");
 //@route GET /api/v1/products
 //@access Public
 exports.getProducts = asyncHamdler(async (req, res) => {
+  //1) filtering
+  // eslint-disable-next-line node/no-unsupported-features/es-syntax
+  const queryStringObj = { ...req.query };
+  const excludesFields = ["page", "sort", "limit", "fields"];
+  excludesFields.forEach((field) => delete queryStringObj[field]);
+
+  //apply filteration using [gte, gt, lte, lt]
+  let queryStr = JSON.stringify(queryStringObj);
+  queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+
+  //2) pagination
   const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 0;
+  const limit = req.query.limit * 1 || 50;
   const skip = (page - 1) * limit;
 
-  const products = await Product.find({})
+  //build query
+  const mongooseQuery = Product.find(JSON.parse(queryStr))
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name" });
+
+  // execute query
+  const products = await mongooseQuery;
+
   res.status(200).json({ result: products.length, page, data: products });
 });
 
