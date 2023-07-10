@@ -24,10 +24,18 @@ exports.getProducts = asyncHamdler(async (req, res) => {
   const skip = (page - 1) * limit;
 
   //build query
-  const mongooseQuery = Product.find(JSON.parse(queryStr))
+  let mongooseQuery = Product.find(JSON.parse(queryStr))
     .skip(skip)
     .limit(limit)
     .populate({ path: "category", select: "name" });
+
+  //3) sorting
+  if (req.query.sort) {
+    const sortBy = req.query.sort.split(",").join(" ");
+    mongooseQuery = mongooseQuery.sort(sortBy);
+  } else {
+    mongooseQuery = mongooseQuery.sort("-createdAt");
+  }
 
   // execute query
   const products = await mongooseQuery;
