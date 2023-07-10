@@ -14,7 +14,7 @@ exports.getProducts = asyncHamdler(async (req, res) => {
   const apiFeatures = new ApiFeatures(Product.find(), req.query)
     .paginate(documentsCounts)
     .filter()
-    .search()
+    .search("Products")
     .sort()
     .limitFields();
 

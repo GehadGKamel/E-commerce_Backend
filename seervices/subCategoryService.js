@@ -1,19 +1,17 @@
 const slugify = require("slugify");
 const asyncHamdler = require("express-async-handler");
 const ApiError = require("../utils/apiError");
-
+const ApiFeatures = require("../utils/apiFeatures");
 const SubCategory = require("../models/subCategoryModel");
-
 
 exports.setCategoryIdToBody = (req, res, next) => {
   if (!req.body.category) req.body.category = req.params.categoryId;
   next();
-}
+};
 //@desc creat subCategory
 //@route POST /api/v1/subcategories
 //@access Private
 exports.createSubCategory = asyncHamdler(async (req, res) => {
-
   const { name, category } = req.body;
   const subCategory = await SubCategory.create({
     name,
@@ -24,28 +22,34 @@ exports.createSubCategory = asyncHamdler(async (req, res) => {
 });
 
 exports.createFilterObj = (req, res, next) => {
-  
   let filterObject = {};
   if (req.params.categoryId) filterObject = { category: req.params.categoryId };
-  req.filterObj= filterObject;
+  req.filterObj = filterObject;
   next();
-}
+};
 //@desc get all subcategories
 //@route GET /api/v1/subcategories
 //@access Public
 exports.getSubCategories = asyncHamdler(async (req, res) => {
-  const page = req.query.page * 1 || 1;
-  const limit = req.query.limit * 1 || 0;
-  const skip = (page - 1) * limit;
+  //build query
+  const documentsCounts = await SubCategory.countDocuments();
+  const apiFeatures = new ApiFeatures(SubCategory.find(), req.query)
+    .paginate(documentsCounts)
+    .filter()
+    .search()
+    .sort()
+    .limitFields();
 
-
-  const subCategories = await SubCategory.find(req.filterObj)
-    .skip(skip)
-    .limit(limit);
-  // .populate({ path: "category", select: "name" });
+  // execute query
+  const { mongooseQuery, paginationResult } = apiFeatures;
+  const subCategories = await mongooseQuery;
   res
     .status(200)
-    .json({ result: subCategories.length, page, data: subCategories });
+    .json({
+      result: subCategories.length,
+      paginationResult,
+      data: subCategories,
+    });
 });
 
 //@desc get specific subcategory by id
