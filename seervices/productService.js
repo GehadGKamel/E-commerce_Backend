@@ -37,6 +37,14 @@ exports.getProducts = asyncHamdler(async (req, res) => {
     mongooseQuery = mongooseQuery.sort("-createdAt");
   }
 
+  //4) fields limiting
+  if (req.query.fields) {
+    const fields = req.query.fields.split(",").join(" ");
+    mongooseQuery = mongooseQuery.select(fields);
+  } else {
+    mongooseQuery = mongooseQuery.select("-__v");
+  }
+
   // execute query
   const products = await mongooseQuery;
 
