@@ -12,7 +12,7 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
-} = require("../seervices/categoryService");
+} = require("../services/categoryService");
 
 const subcategoriesRoute = require("./subCategoryRoute");
 

@@ -39,13 +39,13 @@ class ApiFeatures {
   search(modelName) {
     if (this.queryString.keyword) {
       let query = {};
-      if (modelName === "Product") {
+      if (modelName === "product") {
         query.$or = [
           { title: { $regex: this.queryString.keyword, $options: "i" } },
           { description: { $regex: this.queryString.keyword, $options: "i" } },
         ];
-      }else{
-        query= { name: { $regex: this.queryString.keyword, $options: "i" } }
+      } else {
+        query = { name: { $regex: this.queryString.keyword, $options: "i" } };
       }
 
       this.mongooseQuery = this.mongooseQuery.find(query);

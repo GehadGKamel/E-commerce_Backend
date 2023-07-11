@@ -12,7 +12,7 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-} = require("../seervices/productService");
+} = require("../services/productService");
 
 const router = express.Router();
 

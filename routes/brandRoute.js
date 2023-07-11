@@ -12,7 +12,7 @@ const {
   createBrand,
   updateBrand,
   deleteBrand,
-} = require("../seervices/brandService");
+} = require("../services/brandService");
 
 const router = express.Router();
 

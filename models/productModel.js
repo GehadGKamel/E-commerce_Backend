@@ -57,17 +57,23 @@ const productSchema = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Brand",
     },
-    ratingsAverage:{
-      type:Number,
-      min:[1, "Rating must be above 1.0"],
-      max:[5, "Rating must be below 5.0"],
+    ratingsAverage: {
+      type: Number,
+      min: [1, "Rating must be above 1.0"],
+      max: [5, "Rating must be below 5.0"],
     },
-    ratingsQuantity:{
-      type:Number,
-      default:0,
+    ratingsQuantity: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
 );
+
+//mongoose query middleware
+productSchema.pre(/^find/, function (next) {
+  this.populate({ path: "category", select: "name" });
+  next();
+});
 
 module.exports = mongoose.model("Product", productSchema);
