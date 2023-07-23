@@ -1,6 +1,7 @@
-const sharp = require("sharp");
-const { v4: uuidv4 } = require("uuid");
 const asyncHandler = require("express-async-handler");
+const { v4: uuidv4 } = require("uuid");
+const sharp = require("sharp");
+
 const factory = require("./handlersFactory");
 const { uploadSingleImage } = require("../middlewares/uploadImageMiddleware");
 const Brand = require("../models/brandModel");
@@ -17,8 +18,10 @@ exports.resizeImage = asyncHandler(async (req, res, next) => {
     .toFormat("jpeg")
     .jpeg({ quality: 90 })
     .toFile(`uploads/brands/${filename}`);
+
   // save image into our db
   req.body.image = filename;
+
   next();
 });
 
